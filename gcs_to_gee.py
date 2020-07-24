@@ -6,16 +6,16 @@ import time
 import ee
 
 ee.Initialize()
-##this script assumes i have a csv file of the gs names in the same directory as the python file
+##this script assumes you have a csv file of the gs names in the same directory as the python file
 
-date_str = '2019-10-01' #UPDATE
+date_str = '2019-10-01' #UPDATE date
 dt = datetime.strptime(date_str, '%Y-%m-%d')
 date_in_epoch = time.mktime(dt.timetuple()) + dt.microsecond/1e6 #epoch format for manifest upload
-# print(date_in_epoch)
+
 
 country = "tza" #UPDATE for different countries
 filename = "tz_bd_10_19.csv" #UPDATE filename for each month
-eeCollectionName = "projects/earthengine-legacy/assets/users/planetufuoma/tza_monthly_bd" #no need to edit
+eeCollectionName = "projects/earthengine-legacy/assets/users/planetufuoma/tza_monthly_bd" #Update to EE collection name
 tza_uris = [] #empty list to hold gs:ending in tif names
 
 # #this creates an empty manifest and edits it for each uri
@@ -55,9 +55,9 @@ def update_manifest(uri_list, eeCollectionName, assetName, date, country):
     source_json['start_time']['seconds'] = date
     source_json['end_time']['seconds'] = date
     source_json['properties']['country_name'] = country
-    
-    # print(source_json)
-    # print(os.getcwd())
+    #if you need to add additional properties, you can do so here.
+    #source_json['properties']['new_property_name'] = property_data
+
     manifest_filename = "manifest_" + date_str
     with open(manifest_filename, "w") as write_file:
         json.dump(source_json, write_file)
@@ -71,14 +71,14 @@ def ee_ingest(manifest_file):
     Parameters:
     mainfest_file: manifest to upload
     '''
-    #print(os.getcwd())
     try:
         f = open(manifest_file.name)
         f.close()
     except FileNotFoundError:
         print('File does not exist')
-    # print(os.path.exists('/home/ufuoma/' + manifest_file.name))
-    cmd = 'earthengine upload image --manifest ' + '/home/ufuoma/' + manifest_file.name
+ 
+    #this is the command that uploads the manifest
+    cmd = 'earthengine upload image --manifest ' + '/home/ufuoma/' + manifest_file.name 
     print(cmd)
     os.system(cmd)
 
@@ -90,7 +90,6 @@ with open(filename, "r") as csv_file:
     # Append each variable to a list
         tza_uris.append(a)
 
-# assetName = "test_num3_7_14"
-assetName = "bd_" + date_str #CHANGE BACK 
+assetName = "bd_" + date_str 
 manifest = update_manifest(tza_uris, eeCollectionName, assetName, date_in_epoch, country)
 ee_ingest(manifest)
